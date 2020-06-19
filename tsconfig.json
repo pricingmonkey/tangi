@@ -1,0 +1,27 @@
+{
+  "include": [
+    "./src/**/*"
+  ],
+
+  "compilerOptions": {
+    "outDir": "./lib",
+
+    "moduleResolution": "node",
+    "esModuleInterop": true,
+    "module": "commonjs",
+    "target": "esnext",
+    "lib": [
+      "es2020",
+      "dom"
+    ],
+
+    "declaration": true,
+    "sourceMap": true,
+
+    "noEmitOnError": true,
+    "strictNullChecks": true,
+
+    "pretty": true
+  }
+}
+
