@@ -63,11 +63,8 @@ workerLocalContext.receiveMessage(message => {
 });
 ```
 
-### API
 
-TBD
-
-### Interaction patterns
+## Interaction patterns
 
 #### Fire and forget
 
