@@ -1,7 +1,7 @@
 {
   "name": "@pricingmonkey/tangi",
   "version": "1.0.0",
-  "description": "",
+  "description": "Lightweight actor library for Web Workers inspired by Akka",
   "files": [
     "lib"
   ],
@@ -20,6 +20,7 @@
     "url": "git+https://github.com/pricingmonkey/tangi.git"
   },
   "keywords": [
+    "akka",
     "actors",
     "message",
     "worker",
