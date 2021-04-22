@@ -29,27 +29,27 @@
   ],
   "license": "BlueOak-1.0.0",
   "dependencies": {
-    "uuid": "^8.1.0"
+    "uuid": "^8.3.2"
   },
   "devDependencies": {
-    "@babel/cli": "^7.4.3",
-    "@babel/core": "^7.9.6",
-    "@babel/plugin-proposal-class-properties": "^7.4.0",
-    "@babel/plugin-proposal-object-rest-spread": "^7.9.6",
-    "@babel/preset-env": "^7.9.6",
-    "@babel/preset-typescript": "^7.9.0",
-    "@babel/register": "^7.9.0",
-    "@types/mocha": "^7.0.2",
-    "@types/node": "^14.0.1",
-    "@typescript-eslint/eslint-plugin": "^2.33.0",
-    "@typescript-eslint/parser": "^2.33.0",
-    "chai": "^4.2.0",
-    "conventional-changelog-cli": "^2.0.34",
-    "cross-env": "^7.0.2",
-    "eslint": "^7.0.0",
-    "mocha": "^7.1.2",
+    "@babel/cli": "^7.13.16",
+    "@babel/core": "^7.13.16",
+    "@babel/plugin-proposal-class-properties": "^7.13.0",
+    "@babel/plugin-proposal-object-rest-spread": "^7.13.8",
+    "@babel/preset-env": "^7.13.15",
+    "@babel/preset-typescript": "^7.13.0",
+    "@babel/register": "^7.13.16",
+    "@types/mocha": "^8.2.2",
+    "@types/node": "^14.14.41",
+    "@typescript-eslint/eslint-plugin": "^4.22.0",
+    "@typescript-eslint/parser": "^4.22.0",
+    "chai": "^4.3.4",
+    "conventional-changelog-cli": "^2.1.1",
+    "cross-env": "^7.0.3",
+    "eslint": "^7.24.0",
+    "mocha": "^8.3.2",
     "rimraf": "^3.0.2",
     "typemoq": "^2.1.0",
-    "typescript": "^3.9.2"
+    "typescript": "^4.2.4"
   }
 }
