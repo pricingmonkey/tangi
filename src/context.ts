@@ -2,6 +2,7 @@ import { v1 } from 'uuid';
 
 import { TypedMessageEvent, MessageSenderReceiver } from './types';
 import { assignJob, Jobs, resolveJob } from './jobs';
+import { timeout } from './timeout';
 
 interface Left<E> {
   readonly _tag: 'Left'
@@ -20,11 +21,12 @@ type Logger = {
 };
 const NO_LOGGER = { warn: () => undefined };
 
-export type MessageHandler<T> = (message: T & WithReply) => void;
 export type MessageFactory<T> = (id: string) => T;
+export type AskOptions = { timeout: number };
+export type MessageHandler<T> = (message: T & WithReply) => void;
 
 export type ActorContext<Out, In> = {
-  ask<E, A>(makeMessage: MessageFactory<Out>): Promise<Either<E, A>>;
+  ask<E, A>(makeMessage: MessageFactory<Out>, options?: AskOptions): Promise<Either<E, A>>;
   tell(message: Out): void;
   receiveMessage(onMessage: MessageHandler<In>): void;
 };
@@ -59,11 +61,11 @@ export const makeAdvancedActorContext = (logger: Logger = NO_LOGGER) =>
       }
     };
 
-    const ask = <E, A>(makeMessage: (id: string) => Out): Promise<Either<E, A>> => {
+    const ask = <E, A>(makeMessage: (id: string) => Out, options = { timeout: 30000 }): Promise<Either<E, A>> => {
       const id = v1();
       const promiseOfResult = assignJob<Either<E, A>>(jobs, id);
       messageSenderReceiver.postMessage(makeMessage(id));
-      return promiseOfResult;
+      return timeout(promiseOfResult, options.timeout);
     };
 
     const reply = (message: Either<any, any> & { id: string }): void => {
