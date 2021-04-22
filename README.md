@@ -152,19 +152,13 @@ type CancelMessage = {
   id: string;
 }
 
-const makeCancellableTask = () => {
-  let isCancelled = false;
-  return {
-    promise: async () => {
-      for (let i = 0; i < 100000; i++) {
-        await fetch("http://example.org");
-        if (isCancelled) {
-          return;
-        }
-      } 
-    },
-    cancel: () => {
-      isCancelled = true;
+const makeTask = (killSwitch) => {
+  return async () => {
+    for (let i = 0; i < 100000; i++) {
+      await fetch("http://example.org");
+      if (killSwitch.isCancelled) {
+        return;
+      }
     }
   }
 };
@@ -174,10 +168,12 @@ const cancellationOperator = makeCancellationOperator();
 workerLocalContext.receiveMessage(async message => {
   switch (message._tag) {
     case "PING": {
-      const task = makeCancellableTask();
-      cancellationOperator.register(message.id, message.id, task);
-      await task.promise();
-      cancellationOperator.unregister(message.id, message.id);
+      const cancellableTask = cancellationOperator.register(message.id, message.id, makeTask);
+      try {
+        await task.promise();
+      } finally {
+        cancellationOperator.unregister(message.id, message.id);  
+      }
       return;
     }
     case "CANCEL": {

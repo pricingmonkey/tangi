@@ -1,67 +1,51 @@
-import { makeCancellationOperator } from '../src/cancellationOperator';
-import { Mock, Times } from 'typemoq';
+import { expect } from "chai";
+import { KillSwitch, makeCancellationOperator } from "../src/cancellationOperator";
 
-describe('cancellationOperator', () => {
-  it('should cancel registered task', () => {
-    const cancellableTask = Mock.ofType<{ cancel: () => void}>();
+describe("cancellationOperator", () => {
+  const killablePromise = (killSwitch: KillSwitch) => Promise.resolve(killSwitch.isCancelled);
+
+  it("should cancel registered task", async () => {
     const cancellationOperator = makeCancellationOperator();
 
-    cancellationOperator.register('CONTEXT', '1', cancellableTask.object);
+    const cancellableTask = cancellationOperator.register("CONTEXT", "1", killablePromise);
 
-    cancellationOperator.cancel('CONTEXT');
+    cancellationOperator.cancel("CONTEXT");
 
-    cancellableTask.verify((t) => t.cancel(), Times.once());
+    expect(await cancellableTask.promise()).to.equal(true);
   });
 
-  it('should not cancel task if had been unregistered', () => {
-    const cancellableTask = Mock.ofType<{ cancel: () => void}>();
+  it("should not cancel task if had been unregistered", async () => {
     const cancellationOperator = makeCancellationOperator();
 
-    cancellationOperator.register('CONTEXT', '1', cancellableTask.object);
-    cancellationOperator.unregister('CONTEXT', '1');
+    const cancellableTask = cancellationOperator.register("CONTEXT", "1", killablePromise);
+    cancellationOperator.unregister("CONTEXT", "1");
 
-    cancellationOperator.cancel('CONTEXT');
+    cancellationOperator.cancel("CONTEXT");
 
-    cancellableTask.verify((t) => t.cancel(), Times.never());
+    expect(await cancellableTask.promise()).to.equal(false);
   });
 
-  it('should only cancel tasks from the right context', () => {
-    const cancellableTaskOne = Mock.ofType<{ cancel: () => void}>();
-    const cancellableTaskTwo = Mock.ofType<{ cancel: () => void}>();
+  it("should only cancel tasks from the right context", async () => {
     const cancellationOperator = makeCancellationOperator();
 
-    cancellationOperator.register('CONTEXT_1', '1', cancellableTaskOne.object);
-    cancellationOperator.register('CONTEXT_2', '2', cancellableTaskOne.object);
+    const cancellableTaskOne = cancellationOperator.register("CONTEXT_1", "1", killablePromise);
+    const cancellableTaskTwo = cancellationOperator.register("CONTEXT_2", "2", killablePromise);
 
-    cancellationOperator.cancel('CONTEXT_1');
+    cancellationOperator.cancel("CONTEXT_1");
 
-    cancellableTaskOne.verify((t) => t.cancel(), Times.once());
-    cancellableTaskTwo.verify((t) => t.cancel(), Times.never());
+    expect(await cancellableTaskOne.promise()).to.equal(true);
+    expect(await cancellableTaskTwo.promise()).to.equal(false);
   });
 
-  it('should ignore non-existing unregistration', () => {
+  it("should ignore non-existing unregistration", () => {
     const cancellationOperator = makeCancellationOperator();
 
-    cancellationOperator.unregister('CONTEXT_1', '1');
+    cancellationOperator.unregister("CONTEXT_1", "1");
   });
 
-  it('should ignore non-existing cancellation', () => {
+  it("should ignore non-existing cancellation", () => {
     const cancellationOperator = makeCancellationOperator();
 
-    cancellationOperator.cancel('CONTEXT_1');
-  });
-
-  it('should ignore double cancellation', () => {
-    const cancellableTask = Mock.ofType<{ cancel: () => void}>();
-    const cancellationOperator = makeCancellationOperator();
-
-    cancellationOperator.register('CONTEXT', '1', cancellableTask.object);
-
-    cancellationOperator.cancel('CONTEXT');
-    cancellableTask.verify((t) => t.cancel(), Times.once());
-    cancellableTask.reset();
-
-    cancellationOperator.cancel('CONTEXT');
-    cancellableTask.verify((t) => t.cancel(), Times.never());
+    cancellationOperator.cancel("CONTEXT_1");
   });
 });
