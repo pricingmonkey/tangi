@@ -8,8 +8,8 @@ import { makeActorContext, REPLY } from '../src/context';
 chai.use(chaiAsPromised);
 
 describe('actor context', () => {
-  describe("ask", () => {
-    it("should support ask pattern of communication and receive reply", async () => {
+  describe('ask', () => {
+    it('should support ask pattern of communication and receive reply', async () => {
       const postMessage = Mock.ofType<(message: any) => void>();
       const messageSenderReceiver: any = { onmessage: undefined, postMessage: postMessage.object };
       const context = makeActorContext(messageSenderReceiver);
@@ -28,42 +28,42 @@ describe('actor context', () => {
       expect(reply).to.equal(messageEvent.data);
     });
 
-    describe("timeout", () => {
-      it("should timeout after 30s by default if ask never resolves", async () => {
+    describe('timeout', () => {
+      it('should timeout after 30s by default if ask never resolves', async () => {
         const clock = fakeTimers.install();
 
         const postMessage = Mock.ofType<(message: any) => void>();
         const messageSenderReceiver: any = { onmessage: undefined, postMessage: postMessage.object };
         const context = makeActorContext(messageSenderReceiver);
 
-        const makeMessage = (id: string): any => undefined;
+        const makeMessage = (): any => undefined;
         const promise = context.ask(makeMessage);
         await clock.tickAsync(30000);
 
-        await expect(promise).to.be.rejectedWith("Timed out after 30000 ms");
+        await expect(promise).to.be.rejectedWith('Timed out after 30000 ms');
 
         clock.uninstall();
       });
 
-      it("should timeout after specified timeout if ask never resolves", async () => {
+      it('should timeout after specified timeout if ask never resolves', async () => {
         const clock = fakeTimers.install();
 
         const postMessage = Mock.ofType<(message: any) => void>();
         const messageSenderReceiver: any = { onmessage: undefined, postMessage: postMessage.object };
         const context = makeActorContext(messageSenderReceiver);
 
-        const makeMessage = (id: string): any => undefined;
+        const makeMessage = (): any => undefined;
         const promise = context.ask(makeMessage, { timeout: 2500 });
         await clock.tickAsync(2500);
 
-        await expect(promise).to.be.rejectedWith("Timed out after 2500 ms");
+        await expect(promise).to.be.rejectedWith('Timed out after 2500 ms');
 
         clock.uninstall();
       });
     });
   });
 
-  describe("receiveMessage", () => {
+  describe('receiveMessage', () => {
     it("should attach reply handler to message which isn't already a reply", async () => {
       const onReceiveMessage = Mock.ofType<(message: any) => void>();
       const messageSenderReceiver: any = { onmessage: undefined };

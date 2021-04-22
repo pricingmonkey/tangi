@@ -9,7 +9,7 @@
   "typings": "lib/index.d.ts",
   "sideEffects": false,
   "scripts": {
-    "lint": "eslint --ext .ts src",
+    "lint": "eslint --ext .ts src test",
     "build": "tsc",
     "clean": "rimraf lib dist",
     "test": "mocha 'test/**/*.spec.ts'",
