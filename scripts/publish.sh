@@ -1,7 +1,7 @@
 #!/bin/bash
 
 if [[ -z $(git status -uno --porcelain) ]]; then
-  VERSION="$(npm view tangi version)";
+  VERSION="$(npm view @pricingmonkey/tangi version)";
   read -p "Enter the new version number: (currently ${VERSION}) " BUMP;
   VERSION="$(npm version $BUMP --no-git-tag-version)";
   node_modules/.bin/conventional-changelog -p angular -i CHANGELOG.md -s;
