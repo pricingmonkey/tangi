@@ -1,6 +1,6 @@
 {
   "name": "@pricingmonkey/tangi",
-  "version": "2.0.1",
+  "version": "2.1.0",
   "description": "Lightweight actor library for Web Workers inspired by Akka",
   "files": [
     "lib"
