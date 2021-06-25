@@ -117,7 +117,7 @@ describe('actor context', () => {
     it('should reply with response if receiveMessage handler returns response', async () => {
       const postMessage = Mock.ofType<(message: any) => void>();
       const messageSenderReceiver = emptyMessageSenderReceiver({ postMessage: postMessage.object });
-      const context = makeActorContext(messageSenderReceiver);
+      const context = makeActorContext<never, { tag: 'A' }, { A: { a: number } }>(messageSenderReceiver);
       context.receiveMessage(() => {
         return { a: 1 };
       });
@@ -132,7 +132,7 @@ describe('actor context', () => {
     it('should not reply if receiveMessage handler returns undefined', async () => {
       const postMessage = Mock.ofType<(message: any) => void>();
       const messageSenderReceiver = emptyMessageSenderReceiver({ postMessage: postMessage.object });
-      const context = makeActorContext(messageSenderReceiver);
+      const context = makeActorContext<never, { tag: 'A' }, { A: undefined }>(messageSenderReceiver);
       context.receiveMessage(() => {
         return undefined;
       });
@@ -147,7 +147,7 @@ describe('actor context', () => {
     it('should reply with response if receiveMessage handler returns a promise of response', async () => {
       const postMessage = Mock.ofType<(message: any) => void>();
       const messageSenderReceiver = emptyMessageSenderReceiver({ postMessage: postMessage.object });
-      const context = makeActorContext(messageSenderReceiver);
+      const context = makeActorContext<never, { tag: 'A' }, { A: Promise<{ a: number}> }>(messageSenderReceiver);
       context.receiveMessage(() => {
         return Promise.resolve({ a: 1 });
       });

@@ -23,12 +23,12 @@ const NO_LOGGER = { warn: () => undefined };
 
 export type MessageFactory<T> = (id: string) => T;
 export type AskOptions = { timeout: number };
-export type MessageHandler<T> = (message: T & WithReply) => any;
+export declare type MessageHandler<In extends { tag: string }, ResponseMap extends Record<In['tag'], any>> = (message: In & WithReply) => ResponseMap[In['tag']];
 
-export type ActorContext<Out, In> = {
+export type ActorContext<Out, In extends { tag: string }, ResponseMap extends Record<In['tag'], any> = any> = {
   ask<E, A>(makeMessage: MessageFactory<Out>, options?: AskOptions): Promise<Either<E, A>>;
   tell(message: Out): void;
-  receiveMessage(onMessage: MessageHandler<In>): void;
+  receiveMessage(onMessage: MessageHandler<In, ResponseMap>): void;
 };
 
 /**
@@ -44,9 +44,9 @@ export type WithReply = {
   [REPLY]: (message: Either<any, any>) => void
 };
 export const makeAdvancedActorContext = (logger: Logger = NO_LOGGER) =>
-  <Out, In>(messageSenderReceiver: MessageSenderReceiver<Out, In>): ActorContext<Out, In> => {
+  <Out, In extends { tag: string }, ResponseMap extends Record<In['tag'], any> = any>(messageSenderReceiver: MessageSenderReceiver<Out, In>): ActorContext<Out, In, ResponseMap> => {
     type MessageWithReplyFn = In & WithReply;
-    let onReceiveMessage: ((ev: MessageWithReplyFn) => any) | undefined = undefined;
+    let onReceiveMessage: ((ev: MessageWithReplyFn) => ResponseMap[MessageWithReplyFn['tag']]) | undefined = undefined;
     const jobs: Jobs = {};
     messageSenderReceiver.onmessage = (ev: TypedMessageEvent<In>) => {
       const data: any = ev.data;
@@ -57,7 +57,7 @@ export const makeAdvancedActorContext = (logger: Logger = NO_LOGGER) =>
           data[REPLY] = data[UNSAFE_REPLY] = (response: any) => {
             reply(data.id, response);
           };
-          const response = onReceiveMessage(data);
+          const response: any = onReceiveMessage(data);
           if (response instanceof Promise) {
             return response.then(r => {
               if (r !== undefined) {
@@ -94,7 +94,7 @@ export const makeAdvancedActorContext = (logger: Logger = NO_LOGGER) =>
       messageSenderReceiver.postMessage(message);
     };
 
-    const receiveMessage = (onMessage: (message: MessageWithReplyFn) => any) => {
+    const receiveMessage = <M extends MessageWithReplyFn> (onMessage: (message: M) => ResponseMap[M['tag']]) => {
       if (onReceiveMessage) {
         logger.warn('Overriding existing receiveMessage handler!');
       }
