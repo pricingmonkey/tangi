@@ -4,6 +4,7 @@ import chai, { expect } from 'chai';
 import * as fakeTimers from '@sinonjs/fake-timers';
 
 import { makeActorContext, REPLY } from '../src/context';
+import { MessageSenderReceiver } from '../src';
 
 chai.use(chaiAsPromised);
 
@@ -64,6 +65,14 @@ describe('actor context', () => {
   });
 
   describe('receiveMessage', () => {
+    const emptyMessageSenderReceiver = <In, Out> (p: Partial<MessageSenderReceiver<In, Out>>): MessageSenderReceiver<In, Out> => {
+      return {
+        onmessage: p.onmessage || (() => undefined),
+        addEventListener: p.addEventListener || (() => undefined),
+        postMessage: p.postMessage || (() => undefined)
+      };
+    };
+
     it("should attach reply handler to message which isn't already a reply", async () => {
       const onReceiveMessage = Mock.ofType<(message: any) => void>();
       const messageSenderReceiver: any = { onmessage: undefined };
@@ -102,6 +111,66 @@ describe('actor context', () => {
       messageSenderReceiver.onmessage({ data: { } });
 
       expect(() => capturedMessage[REPLY]({ })).to.throw('cannot reply to message without id');
+      postMessage.verify(fn => fn(It.isAny()), Times.never());
+    });
+
+    it('should reply with response if receiveMessage handler returns response', async () => {
+      const postMessage = Mock.ofType<(message: any) => void>();
+      const messageSenderReceiver = emptyMessageSenderReceiver({ postMessage: postMessage.object });
+      const context = makeActorContext(messageSenderReceiver);
+      context.receiveMessage(() => {
+        return { a: 1 };
+      });
+
+      if (messageSenderReceiver.onmessage) {
+        messageSenderReceiver.onmessage({ data: { id: 'some-id' } } as any);
+      }
+
+      postMessage.verify(fn => fn(It.isValue({ id: 'some-id', a: 1 })), Times.once());
+    });
+
+    it('should not reply if receiveMessage handler returns undefined', async () => {
+      const postMessage = Mock.ofType<(message: any) => void>();
+      const messageSenderReceiver = emptyMessageSenderReceiver({ postMessage: postMessage.object });
+      const context = makeActorContext(messageSenderReceiver);
+      context.receiveMessage(() => {
+        return undefined;
+      });
+
+      if (messageSenderReceiver.onmessage) {
+        messageSenderReceiver.onmessage({ data: { id: 'some-id' } } as any);
+      }
+
+      postMessage.verify(fn => fn(It.isAny()), Times.never());
+    });
+
+    it('should reply with response if receiveMessage handler returns a promise of response', async () => {
+      const postMessage = Mock.ofType<(message: any) => void>();
+      const messageSenderReceiver = emptyMessageSenderReceiver({ postMessage: postMessage.object });
+      const context = makeActorContext(messageSenderReceiver);
+      context.receiveMessage(() => {
+        return Promise.resolve({ a: 1 });
+      });
+
+      if (messageSenderReceiver.onmessage) {
+        await messageSenderReceiver.onmessage({ data: { id: 'some-id' } } as any);
+      }
+
+      postMessage.verify(fn => fn(It.isValue({ id: 'some-id', a: 1 })), Times.once());
+    });
+
+    it('should not reply with response if receiveMessage handler returns a promise of undefined', async () => {
+      const postMessage = Mock.ofType<(message: any) => void>();
+      const messageSenderReceiver = emptyMessageSenderReceiver({ postMessage: postMessage.object });
+      const context = makeActorContext<never, { tag: 'A' }, { A: Promise<undefined> }>(messageSenderReceiver);
+      context.receiveMessage(() => {
+        return Promise.resolve(undefined);
+      });
+
+      if (messageSenderReceiver.onmessage) {
+        await messageSenderReceiver.onmessage({ data: { id: 'some-id' } } as any);
+      }
+
       postMessage.verify(fn => fn(It.isAny()), Times.never());
     });
   });

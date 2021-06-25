@@ -23,7 +23,7 @@ const NO_LOGGER = { warn: () => undefined };
 
 export type MessageFactory<T> = (id: string) => T;
 export type AskOptions = { timeout: number };
-export type MessageHandler<T> = (message: T & WithReply) => void;
+export type MessageHandler<T> = (message: T & WithReply) => any;
 
 export type ActorContext<Out, In> = {
   ask<E, A>(makeMessage: MessageFactory<Out>, options?: AskOptions): Promise<Either<E, A>>;
@@ -34,12 +34,19 @@ export type ActorContext<Out, In> = {
 /**
  * See https://doc.akka.io/docs/akka/current/typed/interaction-patterns.html
  */
+
+export const UNSAFE_REPLY = Symbol.for('@reply');
+/** @deprecated use UNSAFE_REPLY instead. */
 export const REPLY = Symbol.for('@reply');
-export type WithReply = { [REPLY]: (message: Either<any, any>) => void };
+export type WithReply = {
+  [UNSAFE_REPLY]: (message: Either<any, any>) => void
+  /** @deprecated use UNSAFE_REPLY instead. */
+  [REPLY]: (message: Either<any, any>) => void
+};
 export const makeAdvancedActorContext = (logger: Logger = NO_LOGGER) =>
   <Out, In>(messageSenderReceiver: MessageSenderReceiver<Out, In>): ActorContext<Out, In> => {
     type MessageWithReplyFn = In & WithReply;
-    let onReceiveMessage: ((ev: MessageWithReplyFn) => void) | undefined = undefined;
+    let onReceiveMessage: ((ev: MessageWithReplyFn) => any) | undefined = undefined;
     const jobs: Jobs = {};
     messageSenderReceiver.onmessage = (ev: TypedMessageEvent<In>) => {
       const data: any = ev.data;
@@ -47,14 +54,21 @@ export const makeAdvancedActorContext = (logger: Logger = NO_LOGGER) =>
         resolveJob(jobs, data.id, data);
       } else {
         if (onReceiveMessage) {
-          data[REPLY] = (response: any) => {
-            if (data.id) {
-              reply({ id: data.id, ...response });
-            } else {
-              throw new Error('cannot reply to message without id');
-            }
+          data[REPLY] = data[UNSAFE_REPLY] = (response: any) => {
+            reply(data.id, response);
           };
-          onReceiveMessage(data);
+          const response = onReceiveMessage(data);
+          if (response instanceof Promise) {
+            return response.then(r => {
+              if (r !== undefined) {
+                reply(data.id, r);
+              }
+            });
+          } else {
+            if (response !== undefined) {
+              reply(data.id, response);
+            }
+          }
         } else {
           logger.warn('unhandled message: ' + JSON.stringify(data));
         }
@@ -68,7 +82,11 @@ export const makeAdvancedActorContext = (logger: Logger = NO_LOGGER) =>
       return timeout(promiseOfResult, options.timeout);
     };
 
-    const reply = (message: Either<any, any> & { id: string }): void => {
+    const reply = (id: string, response: Either<any, any>): void => {
+      if (id === undefined || id === null) {
+        throw new Error('cannot reply to message without id');
+      }
+      const message = { id, ...response };
       messageSenderReceiver.postMessage(message as any);
     };
 
@@ -76,7 +94,7 @@ export const makeAdvancedActorContext = (logger: Logger = NO_LOGGER) =>
       messageSenderReceiver.postMessage(message);
     };
 
-    const receiveMessage = (onMessage: (message: MessageWithReplyFn) => void) => {
+    const receiveMessage = (onMessage: (message: MessageWithReplyFn) => any) => {
       if (onReceiveMessage) {
         logger.warn('Overriding existing receiveMessage handler!');
       }
