@@ -1,3 +1,17 @@
+# [2.3.0](https://github.com/pricingmonkey/tangi/compare/v2.2.0...v2.3.0) (2021-06-28)
+
+
+### Bug Fixes
+
+* add missing UNSAFE_REPLY in a top level export ([aeaac94](https://github.com/pricingmonkey/tangi/commit/aeaac948da1b4173d40bddf457ecbd12634969d4))
+
+
+### Features
+
+* disable timeout if time is undefined ([c011455](https://github.com/pricingmonkey/tangi/commit/c011455c8bb2e00e34e3f94091a525a9bb58f6ec))
+
+
+
 <a name="2.2.0"></a>
 ## [2.2.0](https://github.com/pricingmonkey/tangi/compare/v2.1.0...v2.2.0) (2021-06-25)
 
