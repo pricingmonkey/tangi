@@ -9,61 +9,53 @@ Lightweight actor library for Web Workers inspired by [Akka](https://doc.akka.io
 
 Type-safe, production-ready and lightweight messaging layer for Web Workers.
 
-Best served with:
- - https://github.com/webpack-contrib/worker-loader
-
 ## Why?
 
 For people to scale Web Workers beyond the simple patterns of communication.
 
 ## Basic usage
 
-**messages.ts**
-```typescript
-type PingMessage = {
-  _tag: "PING";
-}
+Run `npx http-server .` and open index.html:
 
-type PongMessage = {
-  _tag: "PONG";
-}
-```
+**index.html**
+```html
+<script type="module">
+import { makeActorContext } from "https://esm.sh/@pricingmonkey/tangi";
 
-**main.ts**
-```typescript
-import { makeActorContext } from "tangi";
-import { PingMessage, PongMessage } from "./messages";
-
-const worker = new (require("worker-loader!./worker"))();
-const workerRemoteContext = makeActorContext<PingMessage, never>(worker);
-const response = await workerRemoteContext.ask<string, PongMessage>(id => ({ _tag: "PING", id }));
+const worker = new Worker(new URL('./worker.js', import.meta.url), { type: 'module' });
+const workerRemoteContext = makeActorContext(worker);
+const response = await workerRemoteContext.ask(id => ({ _tag: "PING", id }));
 switch (response._tag) {
   case "Right": {  
     console.log(response.right);
+    break;
   }
   case "Left": {  
     console.error(response.left);
+    break;
   }
 }
+</script>
 ```
 
-**worker.ts**
-```typescript
-import { makeActorContext } from "tangi";
-import { PongMessage } from "./messages";
+**worker.js**
+```javascript
+import { makeActorContext } from "https://esm.sh/@pricingmonkey/tangi";
 
-const workerLocalContext = makeActorContext<never, PongMessage>(globalThis as any);
+const workerLocalContext = makeActorContext(self);
 workerLocalContext.receiveMessage(message => {
   switch (message._tag) {
     case "PING": {
-      return { _tag: "PONG" };
+      return { _tag: "Right", right: "PONG" };
     }  
   }
 });
 ```
 
+## Interaction patterns (TypeScript)
 
-## Interaction patterns
+Best served with:
+- https://github.com/webpack-contrib/worker-loader
 
 #### Fire and forget
 
@@ -124,7 +116,7 @@ console.log(response)
 import { makeActorContext } from "tangi";
 import { PongMessage } from "./messages";
 
-const workerLocalContext = makeActorContext<never, PongMessage>(globalThis as any);
+const workerLocalContext = makeActorContext<never, PongMessage>(self as any);
 workerLocalContext.receiveMessage(message => {
   switch (message._tag) {
     case "PING": {
@@ -161,7 +153,7 @@ const makeTask = (killSwitch) => {
   }
 };
 
-const workerLocalContext = makeActorContext<never, PongMessage>(globalThis as any);
+const workerLocalContext = makeActorContext<never, PongMessage>(self as any);
 const cancellationOperator = makeCancellationOperator();
 workerLocalContext.receiveMessage(async message => {
   switch (message._tag) {
