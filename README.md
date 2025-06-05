@@ -49,15 +49,14 @@ switch (response._tag) {
 
 **worker.ts**
 ```typescript
-import { makeActorContext, REPLY } from "tangi";
+import { makeActorContext } from "tangi";
 import { PongMessage } from "./messages";
 
 const workerLocalContext = makeActorContext<never, PongMessage>(globalThis as any);
 workerLocalContext.receiveMessage(message => {
   switch (message._tag) {
     case "PING": {
-      message[REPLY]({ _tag: "PONG" });
-      return;
+      return { _tag: "PONG" };
     }  
   }
 });
@@ -122,15 +121,14 @@ console.log(response)
 
 **worker.ts**
 ```typescript
-import { makeActorContext, REPLY } from "tangi";
+import { makeActorContext } from "tangi";
 import { PongMessage } from "./messages";
 
 const workerLocalContext = makeActorContext<never, PongMessage>(globalThis as any);
 workerLocalContext.receiveMessage(message => {
   switch (message._tag) {
     case "PING": {
-      message[REPLY]({ _tag: "PONG" });
-      return;
+      return { _tag: "PONG" };
     }  
   }
 });
@@ -140,7 +138,7 @@ workerLocalContext.receiveMessage(message => {
 
 **worker.ts**
 ```typescript
-import { makeActorContext, REPLY, makeCancellationOperator } from "tangi";
+import { makeActorContext, makeCancellationOperator } from "tangi";
 
 type PingMessage = {
   _tag: "PING";
