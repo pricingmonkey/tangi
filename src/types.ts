@@ -11,7 +11,7 @@ export interface MessageSenderReceiver<Out, In> {
 
   postMessage(message: Out, transfer: Transferable[]): void;
 
-  postMessage(message: Out, options?: PostMessageOptions): void;
+  postMessage(message: Out, options?: WindowPostMessageOptions): void;
 
   addEventListener<K extends keyof WorkerEventMap<In>>(type: K, listener: (this: this, ev: WorkerEventMap<In>[K]) => any, options?: boolean | AddEventListenerOptions): void;
 }
