@@ -68,26 +68,34 @@ Use `workerRemoteContext.tell({ _tag: "FIRE" })`. See example below:
 
 **messages.ts**
 ```typescript
-type PingMessage = {
-  _tag: "PING";
-}
-
-type PongMessage = {
-  _tag: "PONG";
+type FireMessage = {
+  _tag: "FIRE";
 }
 ```
 
 **main.ts**
 ```typescript
 import { makeActorContext } from "tangi";
-
-type FireMessage = {
-  _tag: "FIRE";
-}
+import { FireMessage } from "./messages";
 
 const worker = new (require("worker-loader!./worker"))();
 const workerRemoteContext = await makeActorContext<FireMessage, never>(worker);
 workerRemoteContext.tell({ _tag: "FIRE" });
+```
+
+**worker.ts**
+```typescript
+import { makeActorContext } from "tangi";
+import { FireMessage } from "./messages";
+
+const workerLocalContext = await makeActorContext<never, FireMessage>(self as any);
+workerLocalContext.receiveMessage(message => {
+  switch (message._tag) {
+    case "FIRE": {
+      // trigger some logic in the WebWorker
+    }  
+  }
+});
 ```
 
 #### Request-response
