@@ -1,3 +1,14 @@
+<a name="3.0.0"></a>
+# [3.0.0](https://github.com/pricingmonkey/tangi/compare/v2.3.0...v3.0.0) (2025-06-13)
+
+
+### Features
+
+* Enable Shared Worker support in makeActorContext ([9bd6de6](https://github.com/pricingmonkey/tangi/commit/9bd6de6c4659e7c751a92be0e4c487ce633de944))
+
+
+
+<a name="2.3.0"></a>
 # [2.3.0](https://github.com/pricingmonkey/tangi/compare/v2.2.0...v2.3.0) (2021-06-28)
 
 
