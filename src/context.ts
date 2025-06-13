@@ -44,10 +44,11 @@ export type WithReply = {
   [REPLY]: (message: Either<any, any>) => void
 };
 export const makeAdvancedActorContext = (logger: Logger = NO_LOGGER) =>
-  <Out, In extends { tag: string }, ResponseMap extends Record<In['tag'], any> = any>(messageSenderReceiver: MessageSenderReceiver<Out, In>): ActorContext<Out, In, ResponseMap> => {
+  async <Out, In extends { tag: string }, ResponseMap extends Record<In['tag'], any> = any>(messageSenderReceiverOrAsyncConstructor: MessageSenderReceiver<Out, In> | (() => Promise<MessageSenderReceiver<Out, In>>)): Promise<ActorContext<Out, In, ResponseMap>> => {
     type MessageWithReplyFn = In & WithReply;
     let onReceiveMessage: ((ev: MessageWithReplyFn) => ResponseMap[MessageWithReplyFn['tag']]) | undefined = undefined;
     const jobs: Jobs = {};
+    const messageSenderReceiver = typeof messageSenderReceiverOrAsyncConstructor === 'function' ? await messageSenderReceiverOrAsyncConstructor() : messageSenderReceiverOrAsyncConstructor;
     messageSenderReceiver.onmessage = (ev: TypedMessageEvent<In>) => {
       const data: any = ev.data;
       if (jobs[data.id]) {

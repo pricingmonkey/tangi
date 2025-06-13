@@ -23,7 +23,7 @@ Run `npx http-server .` and open index.html:
 import { makeActorContext } from "https://esm.sh/@pricingmonkey/tangi";
 
 const worker = new Worker(new URL('./worker.js', import.meta.url), { type: 'module' });
-const workerRemoteContext = makeActorContext(worker);
+const workerRemoteContext = await makeActorContext(worker);
 const response = await workerRemoteContext.ask(id => ({ _tag: "PING", id }));
 switch (response._tag) {
   case "Right": {  
@@ -42,7 +42,7 @@ switch (response._tag) {
 ```javascript
 import { makeActorContext } from "https://esm.sh/@pricingmonkey/tangi";
 
-const workerLocalContext = makeActorContext(self);
+const workerLocalContext = await makeActorContext(self);
 workerLocalContext.receiveMessage(message => {
   switch (message._tag) {
     case "PING": {
@@ -51,6 +51,11 @@ workerLocalContext.receiveMessage(message => {
   }
 });
 ```
+
+## Running demo projects
+
+- `node_modules/.bin/webpack serve --mode development --host 0.0.0.0 --progress --no-client-overlay-warnings --config demo-shared/webpack.config.js`
+- `node_modules/.bin/webpack serve --mode development --host 0.0.0.0 --progress --no-client-overlay-warnings --config demo/webpack.config.js`
 
 ## Interaction patterns (TypeScript)
 
@@ -81,7 +86,7 @@ type FireMessage = {
 }
 
 const worker = new (require("worker-loader!./worker"))();
-const workerRemoteContext = makeActorContext<FireMessage, never>(worker);
+const workerRemoteContext = await makeActorContext<FireMessage, never>(worker);
 workerRemoteContext.tell({ _tag: "FIRE" });
 ```
 
@@ -106,7 +111,7 @@ import { makeActorContext } from "tangi";
 import { PingMessage, PongMessage } from "./messages";
 
 const worker = new (require("worker-loader!./worker"))();
-const workerRemoteContext = makeActorContext<PingMessage, never>(worker);
+const workerRemoteContext = await makeActorContext<PingMessage, never>(worker);
 const response = await workerRemoteContext.ask<string, PongMessage>(id => ({ _tag: "PING", id }));
 console.log(response)
 ```
@@ -116,7 +121,7 @@ console.log(response)
 import { makeActorContext } from "tangi";
 import { PongMessage } from "./messages";
 
-const workerLocalContext = makeActorContext<never, PongMessage>(self as any);
+const workerLocalContext = await makeActorContext<never, PongMessage>(self as any);
 workerLocalContext.receiveMessage(message => {
   switch (message._tag) {
     case "PING": {
@@ -153,7 +158,7 @@ const makeTask = (killSwitch) => {
   }
 };
 
-const workerLocalContext = makeActorContext<never, PongMessage>(self as any);
+const workerLocalContext = await makeActorContext<never, PongMessage>(self as any);
 const cancellationOperator = makeCancellationOperator();
 workerLocalContext.receiveMessage(async message => {
   switch (message._tag) {
