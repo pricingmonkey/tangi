@@ -1,14 +1,13 @@
-import {makeActorContext} from '@pricingmonkey/tangi';
+import {makeMultiChannelActorContext} from "@pricingmonkey/tangi";
 
-const local = await makeActorContext(() => {
-  return new Promise(resolve => {
-    self.onconnect = event => {
-      resolve(event.ports[0]);
+for await (const local of makeMultiChannelActorContext((resolve) => {
+  self.onconnect = event => {
+    resolve(event.ports[0]);
+  }
+})) {
+  local.receiveMessage(msg => {
+    if (msg._tag === 'PING') {
+      return { _tag: "PONG" };
     }
   });
-});
-local.receiveMessage(msg => {
-  if (msg._tag === 'PING') {
-    return { _tag: 'PONG' };
-  }
-});
+}

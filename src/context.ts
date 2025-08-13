@@ -44,11 +44,10 @@ export type WithReply = {
   [REPLY]: (message: Either<any, any>) => void
 };
 export const makeAdvancedActorContext = (logger: Logger = NO_LOGGER) =>
-  async <Out, In extends { tag: string }, ResponseMap extends Record<In['tag'], any> = any>(messageSenderReceiverOrAsyncConstructor: MessageSenderReceiver<Out, In> | (() => Promise<MessageSenderReceiver<Out, In>>)): Promise<ActorContext<Out, In, ResponseMap>> => {
+  <Out, In extends { tag: string }, ResponseMap extends Record<In['tag'], any> = any>(messageSenderReceiver: MessageSenderReceiver<Out, In>): ActorContext<Out, In, ResponseMap> => {
     type MessageWithReplyFn = In & WithReply;
     let onReceiveMessage: ((ev: MessageWithReplyFn) => ResponseMap[MessageWithReplyFn['tag']]) | undefined = undefined;
     const jobs: Jobs = {};
-    const messageSenderReceiver = typeof messageSenderReceiverOrAsyncConstructor === 'function' ? await messageSenderReceiverOrAsyncConstructor() : messageSenderReceiverOrAsyncConstructor;
     messageSenderReceiver.onmessage = (ev: TypedMessageEvent<In>) => {
       const data: any = ev.data;
       if (jobs[data.id]) {
@@ -104,5 +103,41 @@ export const makeAdvancedActorContext = (logger: Logger = NO_LOGGER) =>
     return { ask, tell, receiveMessage };
   };
 
+const makeAsyncQueue = <T>() => {
+  const q: T[] = [];
+  let wake: ((value?: unknown) => void) | null = null;
+  return {
+    push(v) { q.push(v); if (wake) { wake(); wake = null; } },
+    async pop() {
+      while (q.length === 0) {
+        // eslint-disable-next-line no-loop-func
+        await new Promise(resolve => {
+          wake = resolve;
+        });
+      }
+      return q.shift();
+    }
+  };
+};
+
+type ResolveMessageSenderReceiverFn<Out, In extends { tag: string }> = (callback: (messageSenderReceiver: MessageSenderReceiver<Out, In>) => void) => void;
+
+export const makeAdvancedMultiChannelActorContext = (logger: Logger = NO_LOGGER) =>
+  <Out, In extends { tag: string }, ResponseMap extends Record<In['tag'], any> = any>(resolve: ResolveMessageSenderReceiverFn<Out, In>) => ({
+    async *[Symbol.asyncIterator]() {
+      const queue = makeAsyncQueue<MessageSenderReceiver<Out, In>>();
+
+      resolve((messageSenderReceiver) => queue.push(messageSenderReceiver));
+
+      while (true) {
+        const messageSenderReceiver = await queue.pop();
+        if (messageSenderReceiver) {
+          yield makeAdvancedActorContext(logger)<Out, In, ResponseMap>(messageSenderReceiver);
+        }
+      }
+    }
+  });
+
 const consoleLogger = { warn: (msg: string) => console.warn(msg) };
 export const makeActorContext = makeAdvancedActorContext(consoleLogger);
+export const makeMultiChannelActorContext = makeAdvancedMultiChannelActorContext(consoleLogger);
