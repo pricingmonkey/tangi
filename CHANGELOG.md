@@ -1,3 +1,13 @@
+<a name="4.0.0"></a>
+# [4.0.0](https://github.com/pricingmonkey/tangi/compare/v3.0.0...v4.0.0) (2025-08-13)
+
+
+### Features
+
+* Enable Shared Worker support via makeMultiChannelActorContext ([2f1b612](https://github.com/pricingmonkey/tangi/commit/2f1b612d6875e42b552fa760ae7d01b7df00d715))
+
+
+
 <a name="3.0.0"></a>
 # [3.0.0](https://github.com/pricingmonkey/tangi/compare/v2.3.0...v3.0.0) (2025-06-13)
 
