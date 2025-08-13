@@ -54,8 +54,8 @@ workerLocalContext.receiveMessage(message => {
 
 ## Running demo projects
 
-- `node_modules/.bin/webpack serve --mode development --host 0.0.0.0 --progress --no-client-overlay-warnings --config demo-shared/webpack.config.js`
-- `node_modules/.bin/webpack serve --mode development --host 0.0.0.0 --progress --no-client-overlay-warnings --config demo/webpack.config.js`
+- `yarn demo:web-worker`
+- `yarn demo:shared-worker`
 
 ## Interaction patterns (TypeScript)
 

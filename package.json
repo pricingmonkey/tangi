@@ -13,7 +13,9 @@
     "build": "tsc",
     "clean": "rimraf lib dist",
     "test": "mocha 'test/**/*.spec.ts'",
-    "shipit": "yarn clean && yarn build && yarn lint && yarn test && scripts/publish.sh"
+    "shipit": "yarn clean && yarn build && yarn lint && yarn test && scripts/publish.sh",
+    "demo:web-worker": "webpack serve --mode development --host 0.0.0.0 --progress --no-client-overlay-warnings --config demo/webpack.config.js",
+    "demo:shared-worker": "webpack serve --mode development --host 0.0.0.0 --progress --no-client-overlay-warnings --config demo-shared/webpack.config.js"
   },
   "repository": {
     "type": "git",
