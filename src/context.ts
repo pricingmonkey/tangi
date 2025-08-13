@@ -36,12 +36,8 @@ export type ActorContext<Out, In extends { tag: string }, ResponseMap extends Re
  */
 
 export const UNSAFE_REPLY = Symbol.for('@reply');
-/** @deprecated use UNSAFE_REPLY instead. */
-export const REPLY = Symbol.for('@reply');
 export type WithReply = {
   [UNSAFE_REPLY]: (message: Either<any, any>) => void
-  /** @deprecated use UNSAFE_REPLY instead. */
-  [REPLY]: (message: Either<any, any>) => void
 };
 export const makeAdvancedActorContext = (logger: Logger = NO_LOGGER) =>
   <Out, In extends { tag: string }, ResponseMap extends Record<In['tag'], any> = any>(messageSenderReceiver: MessageSenderReceiver<Out, In>): ActorContext<Out, In, ResponseMap> => {
@@ -54,7 +50,7 @@ export const makeAdvancedActorContext = (logger: Logger = NO_LOGGER) =>
         resolveJob(jobs, data.id, data);
       } else {
         if (onReceiveMessage) {
-          data[REPLY] = data[UNSAFE_REPLY] = (response: any) => {
+          data[UNSAFE_REPLY] = (response: any) => {
             reply(data.id, response);
           };
           const response: any = onReceiveMessage(data);

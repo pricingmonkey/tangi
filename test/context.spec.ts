@@ -3,7 +3,7 @@ import { It, Mock, Times } from 'typemoq';
 import chai, { expect } from 'chai';
 import * as fakeTimers from '@sinonjs/fake-timers';
 
-import { makeActorContext, REPLY } from '../src/context';
+import { makeActorContext, UNSAFE_REPLY } from '../src/context';
 import { MessageSenderReceiver } from '../src';
 
 chai.use(chaiAsPromised);
@@ -81,7 +81,7 @@ describe('actor context', () => {
 
       messageSenderReceiver.onmessage({ data: { id: 'some-id' } });
 
-      onReceiveMessage.verify(fn => fn(It.is(msg => REPLY in msg)), Times.once());
+      onReceiveMessage.verify(fn => fn(It.is(msg => UNSAFE_REPLY in msg)), Times.once());
     });
 
     it('should include id in reply to a message', async () => {
@@ -95,7 +95,7 @@ describe('actor context', () => {
 
       messageSenderReceiver.onmessage({ data: { id: 'some-id' } });
 
-      capturedMessage[REPLY]({ });
+      capturedMessage[UNSAFE_REPLY]({ });
       postMessage.verify(fn => fn(It.isObjectWith({ id: 'some-id' })), Times.once());
     });
 
@@ -110,7 +110,7 @@ describe('actor context', () => {
 
       messageSenderReceiver.onmessage({ data: { } });
 
-      expect(() => capturedMessage[REPLY]({ })).to.throw('cannot reply to message without id');
+      expect(() => capturedMessage[UNSAFE_REPLY]({ })).to.throw('cannot reply to message without id');
       postMessage.verify(fn => fn(It.isAny()), Times.never());
     });
 
