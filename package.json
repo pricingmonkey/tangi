@@ -53,7 +53,7 @@
     "cross-env": "^7.0.3",
     "eslint": "^9.28.0",
     "globals": "^16.2.0",
-    "mocha": "^8.4.0",
+    "mocha": "^11.0.1",
     "rimraf": "^6.0.1",
     "typemoq": "^2.1.0",
     "typescript": "^5.8.3",
