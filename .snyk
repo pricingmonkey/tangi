@@ -10,4 +10,8 @@ ignore:
     - 'mocha > serialize-javascript':
         reason: No upgrade possible at this time
         expires: 2026-10-30
+  'SNYK-JS-BRACEEXPANSION-17706650':
+    - 'mocha > glob > minimatch > brace-expansion':
+        reason: No upgrade possible at this time
+        expires: 2026-10-30
 patch: {}
